@@ -207,99 +207,104 @@
         the user with the means to <a href="#dfn-block-a-permission">block</a>
         the ongoing operation, or simply dismiss the notification.
       </p>
-      <p>
-        The `"wake-lock"` <a>powerful feature</a> is defined as follows:
-      </p>
-      <p data-dfn-for="WakeLockPermissionDescriptor">
-        The <a>permission descriptor type</a> is represented by the
-        <dfn>WakeLockPermissionDescriptor</dfn> <a>dictionary</a>, which
-        extends the {{PermissionDescriptor}} with a <dfn>type</dfn> member,
-        allowing for more fine-grained permissions.
-      </p>
-      <pre class="idl">
-        dictionary WakeLockPermissionDescriptor : PermissionDescriptor {
-          WakeLockType type;
-        };
-      </pre>
-      <p>
-        The {{PermissionDescriptor.name}} is `"wake-lock"`.
-      </p>
-      <p>
-        Within this section, |descriptor:PermissionDescriptor| is an instance
-        of the {{PermissionDescriptor}} of the `"wake-lock"` <a>powerful
-        feature</a>.
-      </p>
-      <p>
-        To <dfn>block a permission</dfn>, run these steps:
-      </p>
-      <ol class="algorithm">
-        <li>Let |descriptor| be the <a>permission descriptor type</a> instance
-        to be blocked.
-        </li>
-        <li>Set |descriptor|'s <a>permission state</a> to {{"denied"}}.
-        </li>
-        <li>Let |record| be the <a>platform wake lock</a>'s <a>state record</a>
-        associated with |descriptor|'s <a data-lt=
-        "WakeLockPermissionDescriptor.type">type</a> member.
-        </li>
-        <li>[=list/For each=] |lock:WakeLock| in |record|.{{[[InstanceList]]}}:
-          <ol>
-            <li>Run <a>release a wake lock</a> on |lock|.
-            </li>
-          </ol>
-        </li>
-      </ol>
-      <p>
-        To <dfn>obtain permission</dfn> for <a>wake lock type</a> |type|, run
-        these steps <a>in parallel</a>. This async algorithm returns either
-        {{"granted"}} or {{"denied"}}.
-      </p>
-      <ol class="algorithm">
-        <li>Let |permissionDesc:WakeLockPermissionDescriptor| be a newly
-        created {{WakeLockPermissionDescriptor}}.
-        </li>
-        <li data-cite="permissions">Set |permissionDesc|'s {{name}} member to
-        "`wake-lock`".
-        </li>
-        <li>Set |permissionDesc|'s {{type}} to |type|.
-        </li>
-        <li>Let |resultPromise:Promise| be the result of running <a>query a
-        permission</a> with |permissionDesc|.
-        </li>
-        <li>Await |resultPromise| to settle.
-        </li>
-        <li>If |resultPromise| rejects, return {{"denied"}}.
-        </li>
-        <li>Otherwise, let |status:PermissionStatus| be the result of
-        |resultPromise|.
-        </li>
-        <li>Let |state:PermissionState| be the value of |status|.<code><a data-cite=
-        "permissions#dom-permissionstatus-state">state</a></code>.
-        </li>
-        <li>If |state| is {{"prompt"}}, run the following steps:
-          <ol>
-            <li>If these <a>obtain permission</a> steps were not
-              <a data-cite="html">triggered by user activation</a>, return
-              {{"denied"}}.
-            </li>
-            <li>Return the result of <a>requesting permission to use</a> with
-            |permissionDesc|.
-            </li>
-          </ol>
-        </li>
-        <li>Otherwise, return |state|.
-        </li>
-      </ol>
-      <div class="note">
-        In the case the steps are run from a dedicated worker, then the
-        <a>current global object</a> is a {{DedicatedWorkerGlobalScope}}, which
-        means that the <a>obtain permission</a> steps can never be <a>triggered
-        by user activation</a>, meaning that in order to use wake locks from a
-        dedicated worker, prior permission needs to granted from the
-        <a data-xref-for="">browsing context</a> who created it, e.g. the
-        <a data-xref-for="">browsing context</a> that is exists in the
-        {{DedicatedWorkerGlobalScope}}'s <a>owner set</a>.
-      </div>
+      <section data-dfn-for="WakeLockPermissionDescriptor">
+        <h2>
+          The <dfn>WakeLockPermissionDescriptor</dfn> dictionary
+        </h2>
+        <p>
+          The `"wake-lock"` <a>powerful feature</a> is defined as follows:
+        </p>
+        <p>
+          The <a>permission descriptor type</a> is represented by the
+          <a>WakeLockPermissionDescriptor</a> <a>dictionary</a>, which
+          extends the {{PermissionDescriptor}} with a <dfn>type</dfn> member,
+          allowing for more fine-grained permissions.
+        </p>
+        <pre class="idl">
+          dictionary WakeLockPermissionDescriptor : PermissionDescriptor {
+            WakeLockType type;
+          };
+        </pre>
+        <p>
+          The {{PermissionDescriptor.name}} is `"wake-lock"`.
+        </p>
+      </section>
+      <section>
+        <h2>
+          Permission algorithms
+        </h2>
+        <p>
+          To <dfn>block a permission</dfn>, run these steps:
+        </p>
+        <ol class="algorithm">
+          <li>Let |descriptor:WakeLockPermissionDescriptor| be an instance of the
+            {{WakeLockPermissionDescriptor}} to be blocked.
+          </li>
+          <li>Set |descriptor|'s <a>permission state</a> to {{"denied"}}.
+          </li>
+          <li>Let |record| be the <a>platform wake lock</a>'s <a>state record</a>
+          associated with |descriptor|'s <a data-lt=
+          "WakeLockPermissionDescriptor.type">type</a> member.
+          </li>
+          <li>[=list/For each=] |lock:WakeLock| in |record|.{{[[InstanceList]]}}:
+            <ol>
+              <li>Run <a>release a wake lock</a> on |lock|.
+              </li>
+            </ol>
+          </li>
+        </ol>
+        <p>
+          To <dfn>obtain permission</dfn> for <a>wake lock type</a> |type|, run
+          these steps <a>in parallel</a>. This async algorithm returns either
+          {{"granted"}} or {{"denied"}}.
+        </p>
+        <ol class="algorithm">
+          <li>Let |permissionDesc:WakeLockPermissionDescriptor| be a newly
+          created {{WakeLockPermissionDescriptor}}.
+          </li>
+          <li data-cite="permissions">Set |permissionDesc|'s {{name}} member to
+          "`wake-lock`".
+          </li>
+          <li>Set |permissionDesc|'s {{type}} to |type|.
+          </li>
+          <li>Let |resultPromise:Promise| be the result of running <a>query a
+          permission</a> with |permissionDesc|.
+          </li>
+          <li>Await |resultPromise| to settle.
+          </li>
+          <li>If |resultPromise| rejects, return {{"denied"}}.
+          </li>
+          <li>Otherwise, let |status:PermissionStatus| be the result of
+          |resultPromise|.
+          </li>
+          <li>Let |state:PermissionState| be the value of |status|.<code><a data-cite=
+          "permissions#dom-permissionstatus-state">state</a></code>.
+          </li>
+          <li>If |state| is {{"prompt"}}, run the following steps:
+            <ol>
+              <li>If these <a>obtain permission</a> steps were not
+                <a data-cite="html">triggered by user activation</a>, return
+                {{"denied"}}.
+              </li>
+              <li>Return the result of <a>requesting permission to use</a> with
+              |permissionDesc|.
+              </li>
+            </ol>
+          </li>
+          <li>Otherwise, return |state|.
+          </li>
+        </ol>
+        <div class="note">
+          In the case the steps are run from a dedicated worker, then the
+          <a>current global object</a> is a {{DedicatedWorkerGlobalScope}}, which
+          means that the <a>obtain permission</a> steps can never be <a>triggered
+          by user activation</a>, meaning that in order to use wake locks from a
+          dedicated worker, prior permission needs to granted from the
+          <a data-xref-for="">browsing context</a> who created it, e.g. the
+          <a data-xref-for="">browsing context</a> that is exists in the
+          {{DedicatedWorkerGlobalScope}}'s <a>owner set</a>.
+        </div>
+      </section>
     </section>
     <section data-dfn-for="WakeLockType">
       <h2>
